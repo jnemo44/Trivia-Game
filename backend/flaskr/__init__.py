@@ -6,7 +6,7 @@ import random
 
 from models import setup_db, Question, Category
 
-QUESTIONS_PER_PAGE = 10
+QUESTIONS_PER_PAGE = 5
 
 def paginate_questions(request, selection):
   page = request.args.get('page',1,type=int)
@@ -22,7 +22,7 @@ def create_app(test_config=None):
   # create and configure the app
   app = Flask(__name__)
   setup_db(app)
-  CORS(app)
+  CORS(app, resources={r"/api/*": {"origins": '*'}})
   #resources={origins:'*'}
   '''
   Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
@@ -44,7 +44,11 @@ def create_app(test_config=None):
     categories = Category.query.all()
     formated_categories = {cat.id:cat.type for cat in categories}
 
+    if formated_categories == {}:
+      abort(404)
+
     return jsonify({
+      'success':True,
       'categories': formated_categories
     })
   '''
@@ -59,11 +63,16 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
-  @app.route('/questions/', methods=['GET'])
+  @app.route('/questions', methods=['GET'])
   def view_questions():
     questions = Question.query.all()
-    #formated_questions = {quest.id:quest.question for quest in categories}
     current_questions = paginate_questions(request,questions)
+
+    if len(current_questions) == 0:
+      abort(404)
+      return jsonify({
+        'success':False
+      })
 
     categories = Category.query.all()
     formated_categories = {cat.id:cat.type for cat in categories}
@@ -83,6 +92,25 @@ def create_app(test_config=None):
   TEST: When you click the trash icon next to a question, the question will be removed.
   This removal will persist in the database and when you refresh the page. 
   '''
+  @app.route('/questions/<int:question_id>', methods=['DELETE'])
+  def delete_question(question_id):
+    deleted_question = Question.query.filter(Question.id == question_id).one_or_none()
+
+    try:
+      if delete_question is None:
+        abort(404)
+      else:
+        deleted_question.delete()
+
+        questions = Question.query.all()
+        current_questions = paginate_questions(request,questions)      
+
+        return ({
+          'success':True,
+          'questions':current_questions
+        })
+    except:
+      abort(422)
 
   '''
   @TODO: 
@@ -94,6 +122,30 @@ def create_app(test_config=None):
   the form will clear and the question will appear at the end of the last page
   of the questions list in the "List" tab.  
   '''
+  @app.route('/questions', methods=['POST'])
+  def add_question():
+    body = request.get_json()
+
+    new_question = body.get('question',None)
+    new_answer = body.get('answer',None)
+    new_category = body.get('category',None)
+    new_difficulty = body.get('difficulty',None)
+    new_search = body.get('searchTerm',None)
+
+    #if new_search is None:
+
+
+    try:
+      #Build new question from model
+      question = Question(question=new_question,answer=new_answer,category=new_category,difficulty=new_difficulty)
+      #Insert question into the DB
+      question.insert()
+
+      return jsonify({
+        'success':True
+      })
+    except:
+      abort(422)
 
   '''
   @TODO: 
@@ -133,6 +185,22 @@ def create_app(test_config=None):
   Create error handlers for all expected errors 
   including 404 and 422. 
   '''
+  @app.errorhandler(404)
+  def not_found(error):
+      return jsonify({
+          'success':False,
+          'error':404,
+          'message':'Resource not found!'
+      }),404
+
+  @app.errorhandler(422)
+  def unproccesable(error):
+    return jsonify({
+          'success':False,
+          'error':422,
+          'message':'Unprocessable'
+      }),422
+
   
   return app
 
