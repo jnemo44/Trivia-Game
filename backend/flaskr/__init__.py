@@ -8,26 +8,45 @@ from models import setup_db, Question, Category
 
 QUESTIONS_PER_PAGE = 10
 
+def paginate_questions(request, selection):
+  page = request.args.get('page',1,type=int)
+  start = (page-1)*QUESTIONS_PER_PAGE
+  end = start+QUESTIONS_PER_PAGE
+
+  formated_questions = [question.format() for question in selection]
+  current_questions = formated_questions[start:end]
+
+  return current_questions
+
 def create_app(test_config=None):
   # create and configure the app
   app = Flask(__name__)
   setup_db(app)
-  
+  CORS(app)
+  #resources={origins:'*'}
   '''
-  @TODO: Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
+  Set up CORS. Allow '*' for origins. Delete the sample route after completing the TODOs
+  Use the after_request decorator to set Access-Control-Allow
   '''
-
-  '''
-  @TODO: Use the after_request decorator to set Access-Control-Allow
-  '''
+  @app.after_request
+  def after_request(response):
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
+    response.headers.add('Access-Control-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    return response
 
   '''
   @TODO: 
   Create an endpoint to handle GET requests 
   for all available categories.
   '''
+  @app.route('/categories', methods=['GET'])
+  def view_categories():
+    categories = Category.query.all()
+    formated_categories = {cat.id:cat.type for cat in categories}
 
-
+    return jsonify({
+      'categories': formated_categories
+    })
   '''
   @TODO: 
   Create an endpoint to handle GET requests for questions, 
@@ -40,7 +59,23 @@ def create_app(test_config=None):
   ten questions per page and pagination at the bottom of the screen for three pages.
   Clicking on the page numbers should update the questions. 
   '''
+  @app.route('/questions/', methods=['GET'])
+  def view_questions():
+    questions = Question.query.all()
+    #formated_questions = {quest.id:quest.question for quest in categories}
+    current_questions = paginate_questions(request,questions)
 
+    categories = Category.query.all()
+    formated_categories = {cat.id:cat.type for cat in categories}
+    #formated_categories= [category.format() for category in categories]
+
+    return jsonify ({
+      'success':True,
+      'questions': current_questions,
+      'totalQuestions': len(questions),
+      'categories': formated_categories,
+      'currentCategory': {}
+    })
   '''
   @TODO: 
   Create an endpoint to DELETE question using a question ID. 
