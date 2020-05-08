@@ -32,6 +32,7 @@ def create_app(test_config=None):
   def after_request(response):
     response.headers.add('Access-Control-Allow-Headers', 'Content-Type,Authorization,true')
     response.headers.add('Access-Control-Methods', 'GET,PUT,POST,DELETE,OPTIONS')
+    #response.headers.add('Access-Control-Allow-Credentials', 'true')
     return response
 
   '''
@@ -68,11 +69,11 @@ def create_app(test_config=None):
     questions = Question.query.all()
     current_questions = paginate_questions(request,questions)
 
-    if len(current_questions) == 0:
-      abort(404)
-      return jsonify({
-        'success':False
-      })
+    #if len(current_questions) == 0:
+    #  abort(404)
+    #  return jsonify({
+    #    'success':False
+    #  })
 
     categories = Category.query.all()
     formated_categories = {cat.id:cat.type for cat in categories}
@@ -83,7 +84,7 @@ def create_app(test_config=None):
       'questions': current_questions,
       'totalQuestions': len(questions),
       'categories': formated_categories,
-      'currentCategory': {}
+      'currentCategory': 1
     })
   '''
   @TODO: 
@@ -125,27 +126,36 @@ def create_app(test_config=None):
   @app.route('/questions', methods=['POST'])
   def add_question():
     body = request.get_json()
-
-    new_question = body.get('question',None)
-    new_answer = body.get('answer',None)
-    new_category = body.get('category',None)
-    new_difficulty = body.get('difficulty',None)
     new_search = body.get('searchTerm',None)
 
-    #if new_search is None:
+    #If no search term a new question is being added
+    if new_search is None:
+      try:
+        new_question = body.get('question',None)
+        new_answer = body.get('answer',None)
+        new_category = body.get('category',None)
+        new_difficulty = body.get('difficulty',None)
+        #Build new question from model
+        question = Question(question=new_question,answer=new_answer,category=new_category,difficulty=new_difficulty)
+        #Insert question into the DB
+        question.insert()
 
-
-    try:
-      #Build new question from model
-      question = Question(question=new_question,answer=new_answer,category=new_category,difficulty=new_difficulty)
-      #Insert question into the DB
-      question.insert()
+        return jsonify({
+          'success':True
+        })
+      except:
+        abort(422)
+    #Search is being performed
+    else:
+      question_results = Question.query.filter(Question.question.ilike('%'+new_search+'%'))
+      current_results = paginate_questions(request,question_results)
 
       return jsonify({
-        'success':True
+        'success':True,
+        'questions':current_results,
+        'totalQuestions':len(question_results.all()),
+        'currentCategory':1
       })
-    except:
-      abort(422)
 
   '''
   @TODO: 
@@ -157,6 +167,7 @@ def create_app(test_config=None):
   only question that include that string within their question. 
   Try using the word "title" to start. 
   '''
+  #Done
 
   '''
   @TODO: 
@@ -166,7 +177,20 @@ def create_app(test_config=None):
   categories in the left column will cause only questions of that 
   category to be shown. 
   '''
+  @app.route('/categories/<int:cat_id>/questions')
+  def view_question_category(cat_id):
+    questions = Question.query.filter(Question.category == cat_id).all()
+    current_questions = paginate_questions(request,questions)
+    
+    if len(current_questions) == 0:
+      abort(404)
 
+    return jsonify({
+      'success':True,
+      'questions':current_questions,
+      'totalQuestions':len(questions),
+      'currentCategory':cat_id
+    })
 
   '''
   @TODO: 
