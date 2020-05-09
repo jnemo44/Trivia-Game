@@ -288,6 +288,11 @@ Sample: `curl -X POST -H "Content-Type: application/json" -d '{"previous_questio
 ## Deployment
 This application is currently locally hosted ONLY!
 
+## Future Development Ideas
+* Add an additional question field such as rating and make all corresponding updates (db, api endpoints, add question form, etc.)
+* Add users to the DB and track their game scores
+* Add capability to create new categories.
+
 ## Authors
 Joe Niemiec and Udaicty
 
