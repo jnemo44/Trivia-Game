@@ -1,5 +1,57 @@
 # Trivia Game
-A project that is part of the Udacity Full Stack Developer Nanodegree Program. It involved building a backend server that integrated with a pre-built front end that hosts the trivia app. Inside the app you are able to add and delete questions in various categories while also being able to quiz yourself on each category.
+A classic trivia game application that is part of the Udacity Full Stack Developer Nanodegree Program. It involved building a backend server that integrated with a pre-built front end that hosts the trivia app. Inside the app you are able to add and delete questions in various categories while also being able to quiz yourself on each category.
+
+## Getting Started
+### Pre-requisites and Local Development
+This project makes use of Python3, pip, and node so these should be installed before proceeding.
+
+#### Backend
+While inside of the backend directory run `pip install requirements.txt`. All requirements should be satisfied after running this command.
+
+Before running the backend server set the following parameters:
+
+**In Bash:**
+```
+export FLASK_APP=flaskr
+export FLASK_ENV=development
+```
+**In Windows PS:**
+```
+$env:FLASK_APP = "flaskr"
+$env:FLASK_ENV = "development"
+```
+These commands will tell flask that your application resides inside of the flaskr folder and that you want to run in development mode. This means that changes to server code will automatically cause the server to restart!
+
+Now you are ready to start the backend: 
+
+**In Bash or Windows PS:**
+```
+flask run
+```
+The application is now launched on `http://127.0.0.1:5000/` by default and is a proxy in the frontend configuration.
+
+#### Frontend
+Navigate to the frontend directory and `npm install` the required dependencies. This will only need to be performed once. After installation the frontend client can be launched by running `npm start`
+
+By default the client will run on localhost:3000.
+
+### Tests
+In order to perform tests navigate to the backend directory and follow the commands below.
+```
+dropdb trivia_test // omit if running the tests for the first time
+createdb trivia_test 
+psql trivia_test < trivia.psql //This loads predefined trivia data into trivia_test
+```
+Alternativly if psql is not installed on your local machine you can open up a SQL Shell terminal, that came with your postgres installation, and follow these commands once logged in:
+```
+CREATE DATABASE trivia_test;
+\c trivia_test
+\i C:/navigate/to/trivia.psql
+```
+Now your data has been imported into the trivia_test table. In a regular terminal you can now execute testing:
+`python test_flaskr`
+
+All tests reside in this file and should be updated as the application undergoes further development.
 
 ## API Reference
 ### Getting Started:
@@ -233,3 +285,14 @@ Sample: `curl -X POST -H "Content-Type: application/json" -d '{"previous_questio
   "success": true
 }
 ```
+## Deployment
+This application is currently locally hosted ONLY!
+
+## Authors
+Joe Niemiec and Udaicty
+
+## Acknowledgments
+Thanks to Udacity and the mentor team in helping me complete this project!
+
+
+
