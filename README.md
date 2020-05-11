@@ -6,7 +6,8 @@ A classic trivia game application that is part of the Udacity Full Stack Develop
 This project makes use of Python3, pip, and node so these should be installed before proceeding.
 
 #### Backend
-While inside of the backend directory run `pip install requirements.txt`. All requirements should be satisfied after running this command.
+While inside of the backend directory run `pip install -r requirements.txt`. All requirements should be satisfied after running this command.
+**Note: requirements.txt does not include pyscopg2. This will need to be added later once an error asserts requiring it. I found that if pyscopg2 was part of the requirements.txt file I was unable to run the server.**
 
 Before running the backend server set the following parameters:
 
