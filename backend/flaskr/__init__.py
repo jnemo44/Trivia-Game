@@ -84,23 +84,18 @@ def create_app(test_config=None):
   @app.route('/questions/<int:question_id>', methods=['DELETE'])
   def delete_question(question_id):
     deleted_question = Question.query.filter(Question.id == question_id).one_or_none()
+  
+    if deleted_question:
+      Question.delete(deleted_question)
+      questions = Question.query.all()
+      current_questions = paginate_questions(request,questions)
 
-    try:
-      if delete_question is None:
-        abort(404)
-      else:
-        deleted_question.delete()
-
-        questions = Question.query.all()
-        current_questions = paginate_questions(request,questions)      
-
-        return ({
-          'success':True,
-          'questions':current_questions
-        })
-    except:
-      abort(422)
-
+      return jsonify({
+        'success': True,
+        'questions':current_questions,
+        'deleted_question_id':question_id
+      })
+    abort(404)
 
   # POST endpoint that takes a search parameter
   #or new question parameters to either search 
